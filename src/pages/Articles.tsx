@@ -21,48 +21,55 @@ export const Articles: React.FC = () => {
         <p className="text-lg text-neutral-500 font-medium">Наши статьи, новости и аналитика в хронологическом порядке.</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-        {publishedArticles.map((article, index) => (
-          <motion.div 
-            key={article.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: index * 0.1 }}
-          >
-            <Link to={`/article/${article.id}`} className="block h-full group">
-              <div className="flex flex-col h-full">
-                <div className="aspect-[16/9] overflow-hidden bg-neutral-100 mb-4 relative rounded-xl">
-                  {article.is_urgent && (
-                    <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1">
-                      Срочно
-                    </div>
-                  )}
-                  <img 
-                    src={article.image_url} 
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                <div className="flex-grow flex flex-col">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="text-[11px] font-bold text-neutral-500 uppercase tracking-widest">
-                      {format(new Date(article.created_at), 'd MMMM yyyy', { locale: ru })}
-                    </div>
+      {publishedArticles.length === 0 ? (
+        <div className="py-20 text-center">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">Пока нет опубликованных статей</h2>
+          <p className="text-neutral-600">Статьи появятся здесь после публикации.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+          {publishedArticles.map((article, index) => (
+            <motion.div 
+              key={article.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
+              <Link to={`/article/${article.id}`} className="block h-full group">
+                <div className="flex flex-col h-full">
+                  <div className="aspect-[16/9] overflow-hidden bg-neutral-100 mb-4 relative rounded-xl">
+                    {article.is_urgent && (
+                      <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1">
+                        Срочно
+                      </div>
+                    )}
+                    <img 
+                      src={article.image_url} 
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight text-neutral-900 mb-2 group-hover:text-blue-600 transition-colors leading-snug">
-                    {article.title}
-                  </h3>
-                  <p className="text-neutral-600 text-sm line-clamp-3 mt-auto leading-relaxed">
-                    {article.excerpt}
-                  </p>
+                  <div className="flex-grow flex flex-col">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="text-[11px] font-bold text-neutral-500 uppercase tracking-widest">
+                        {format(new Date(article.created_at), 'd MMMM yyyy', { locale: ru })}
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight text-neutral-900 mb-2 group-hover:text-blue-600 transition-colors leading-snug">
+                      {article.title}
+                    </h3>
+                    <p className="text-neutral-600 text-sm line-clamp-3 mt-auto leading-relaxed">
+                      {article.excerpt}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </motion.div>
-        ))}
-      </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

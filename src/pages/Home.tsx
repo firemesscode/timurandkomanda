@@ -77,7 +77,17 @@ export const Home: React.FC = () => {
   const { articles } = useAppContext();
   const publishedArticles = articles.filter(a => a.status === 'published').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   
-  if (publishedArticles.length === 0) return null;
+  if (publishedArticles.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
+        <h2 className="text-2xl font-bold text-neutral-900 mb-4">Пока нет опубликованных статей</h2>
+        <p className="text-neutral-600 mb-8">Зайдите в панель администратора, чтобы добавить новые статьи.</p>
+        <Link to="/admin" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+          Перейти в админку
+        </Link>
+      </div>
+    );
+  }
 
   // Find the first article marked as main, otherwise fallback to the newest one
   const featuredIndex = publishedArticles.findIndex(a => a.is_main);
