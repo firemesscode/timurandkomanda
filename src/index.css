@@ -25,3 +25,52 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d2d2d7; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #86868b; }
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  @apply outline-none min-h-[50vh];
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap-content img, .ProseMirror img {
+  @apply rounded-xl max-w-full h-auto my-8;
+}
+
+.tiptap-content iframe, .ProseMirror iframe {
+  @apply w-full aspect-video rounded-xl my-8;
+}
+
+.tiptap-content a, .ProseMirror a {
+  @apply text-blue-600 underline hover:text-blue-800 transition-colors cursor-pointer;
+}
+
+.tiptap-content h2, .ProseMirror h2 {
+  @apply text-3xl font-bold mt-12 mb-6 tracking-tight;
+}
+
+.tiptap-content h3, .ProseMirror h3 {
+  @apply text-2xl font-bold mt-8 mb-4 tracking-tight;
+}
+
+.tiptap-content p, .ProseMirror p {
+  @apply text-lg leading-relaxed mb-6;
+}
+
+.tiptap-content ul, .ProseMirror ul {
+  @apply list-disc pl-6 mb-6 text-lg leading-relaxed;
+}
+
+.tiptap-content ol, .ProseMirror ol {
+  @apply list-decimal pl-6 mb-6 text-lg leading-relaxed;
+}
+
+.tiptap-content blockquote, .ProseMirror blockquote {
+  @apply border-l-4 border-neutral-900 pl-6 italic text-neutral-600 my-8 text-xl;
+}

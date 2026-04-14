@@ -156,18 +156,25 @@ export const Article: React.FC = () => {
         transition={{ delay: 0.4, duration: 0.5 }}
         className="prose prose-lg prose-neutral max-w-none prose-p:text-neutral-900 prose-p:leading-relaxed prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-neutral-900 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-4 prose-blockquote:border-neutral-900 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-neutral-600"
       >
-        <div className="markdown-body">
-          <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-            {article.content
-              // Fix spaces inside bold tags: "** text **" -> "**text**"
-              .replace(/\*\*([^*]+)\*\*/g, (_, text) => `**${text.trim()}**`)
-              // Fix spaces inside italic tags: "* text *" -> "*text*"
-              .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, (_, text) => `*${text.trim()}*`)
-              // Fix missing space after blockquote: ">text" -> "> text"
-              .replace(/^>([^\s>])/gm, '> $1')
-            }
-          </Markdown>
-        </div>
+        {article.content && /<[a-z][\s\S]*>/i.test(article.content) ? (
+          <div 
+            className="tiptap-content" 
+            dangerouslySetInnerHTML={{ __html: article.content }} 
+          />
+        ) : (
+          <div className="markdown-body">
+            <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+              {article.content
+                // Fix spaces inside bold tags: "** text **" -> "**text**"
+                .replace(/\*\*([^*]+)\*\*/g, (_, text) => `**${text.trim()}**`)
+                // Fix spaces inside italic tags: "* text *" -> "*text*"
+                .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, (_, text) => `*${text.trim()}*`)
+                // Fix missing space after blockquote: ">text" -> "> text"
+                .replace(/^>([^\s>])/gm, '> $1')
+              }
+            </Markdown>
+          </div>
+        )}
       </motion.div>
     </article>
   );
