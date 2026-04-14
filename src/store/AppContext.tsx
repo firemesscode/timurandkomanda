@@ -20,7 +20,7 @@ export interface Article {
   slug: string;
   excerpt: string;
   content: string;
-  image_url: string;
+  image_url?: string;
   video_url?: string;
   image_credit?: string;
   author_id: string;

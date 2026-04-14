@@ -6,8 +6,30 @@ import { ru } from 'date-fns/locale';
 import { useAppContext } from '../store/AppContext';
 
 export const Articles: React.FC = () => {
-  const { articles } = useAppContext();
+  const { articles, loading } = useAppContext();
   const publishedArticles = articles.filter(a => a.status === 'published').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 pb-16 md:pb-24">
+        <div className="mb-8 md:mb-12 border-b border-neutral-200 pb-4 md:pb-6 animate-pulse">
+          <div className="h-12 bg-neutral-200 rounded w-1/3 mb-4"></div>
+          <div className="h-6 bg-neutral-200 rounded w-1/2"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="animate-pulse">
+              <div className="aspect-[16/9] bg-neutral-200 rounded-xl mb-4"></div>
+              <div className="h-4 bg-neutral-200 rounded w-1/4 mb-3"></div>
+              <div className="h-6 bg-neutral-200 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-neutral-200 rounded w-full mt-4"></div>
+              <div className="h-4 bg-neutral-200 rounded w-5/6 mt-2"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 pb-16 md:pb-24">
@@ -23,8 +45,8 @@ export const Articles: React.FC = () => {
 
       {publishedArticles.length === 0 ? (
         <div className="py-20 text-center">
-          <h2 className="text-2xl font-bold text-neutral-900 mb-4">Пока нет опубликованных статей</h2>
-          <p className="text-neutral-600">Статьи появятся здесь после публикации.</p>
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">Материалы готовятся к публикации</h2>
+          <p className="text-neutral-500">Скоро здесь появятся новые интересные статьи.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
@@ -38,18 +60,33 @@ export const Articles: React.FC = () => {
             >
               <Link to={`/article/${article.id}`} className="block h-full group">
                 <div className="flex flex-col h-full">
-                  <div className="aspect-[16/9] overflow-hidden bg-neutral-100 mb-4 relative rounded-xl">
+                  <div className="aspect-[16/9] overflow-hidden bg-neutral-100 mb-4 relative rounded-xl flex items-center justify-center">
                     {article.is_urgent && (
                       <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1">
                         Срочно
                       </div>
                     )}
-                    <img 
-                      src={article.image_url} 
-                      alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      referrerPolicy="no-referrer"
-                    />
+                    {article.image_url ? (
+                      <img 
+                        src={article.image_url} 
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : article.video_url ? (
+                      <div className="w-full h-full bg-black group-hover:scale-105 transition-transform duration-700 ease-out">
+                        <video 
+                          src={article.video_url}
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          className="w-full h-full object-cover opacity-80"
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-neutral-300 font-bold uppercase tracking-widest text-xs">Нет медиа</div>
+                    )}
                   </div>
                   <div className="flex-grow flex flex-col">
                     <div className="flex items-center gap-2 mb-2">

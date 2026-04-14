@@ -161,12 +161,12 @@ export const Admin: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">URL Изображения (Обложка)</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">URL Изображения (Опционально)</label>
                 <input 
-                  required
                   type="url"
                   value={currentArticle.image_url || ''}
                   onChange={e => setCurrentArticle({...currentArticle, image_url: e.target.value})}
+                  placeholder="Ссылка на фото"
                   className="w-full bg-neutral-50 border border-neutral-200 rounded-sm py-3 px-4 text-neutral-900 focus:outline-none focus:border-neutral-900 transition-colors font-medium"
                 />
               </div>
@@ -176,7 +176,7 @@ export const Admin: React.FC = () => {
                   type="url"
                   value={currentArticle.video_url || ''}
                   onChange={e => setCurrentArticle({...currentArticle, video_url: e.target.value})}
-                  placeholder="Если указано, заменит фото в статье"
+                  placeholder="Ссылка на видео"
                   className="w-full bg-neutral-50 border border-neutral-200 rounded-sm py-3 px-4 text-neutral-900 focus:outline-none focus:border-neutral-900 transition-colors font-medium"
                 />
               </div>

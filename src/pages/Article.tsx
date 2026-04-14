@@ -58,13 +58,21 @@ export const Article: React.FC = () => {
     }
     
     // Fallback to image
+    if (article.image_url) {
+      return (
+        <img 
+          src={article.image_url} 
+          alt={article.title}
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+        />
+      );
+    }
+
     return (
-      <img 
-        src={article.image_url} 
-        alt={article.title}
-        className="w-full h-full object-cover"
-        referrerPolicy="no-referrer"
-      />
+      <div className="w-full h-full flex items-center justify-center bg-neutral-100">
+        <span className="text-neutral-300 font-bold uppercase tracking-widest text-sm">Нет медиа</span>
+      </div>
     );
   };
 
@@ -124,21 +132,23 @@ export const Article: React.FC = () => {
         </div>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        className="mb-8 md:mb-12"
-      >
-        <div className="aspect-[16/9] bg-neutral-100 rounded-2xl overflow-hidden">
-          {renderMedia()}
-        </div>
-        {article.image_credit && !article.video_url && (
-          <div className="text-right mt-2 text-xs text-neutral-500 uppercase tracking-wider font-bold">
-            Фото: {article.image_credit}
+      {(article.image_url || article.video_url) && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mb-8 md:mb-12"
+        >
+          <div className="aspect-[16/9] bg-neutral-100 rounded-2xl overflow-hidden">
+            {renderMedia()}
           </div>
-        )}
-      </motion.div>
+          {article.image_credit && !article.video_url && (
+            <div className="text-right mt-2 text-xs text-neutral-500 uppercase tracking-wider font-bold">
+              Фото: {article.image_credit}
+            </div>
+          )}
+        </motion.div>
+      )}
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}

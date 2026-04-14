@@ -28,9 +28,7 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-neutral-900 font-bold uppercase tracking-wider text-sm mb-6">Контакты</h4>
             <ul className="flex flex-col gap-4">
-              <li><a href="mailto:hello@timurandteam.ru" className="text-neutral-600 hover:text-neutral-900 transition-colors font-medium">hello@timurandteam.ru</a></li>
-              <li><a href="#" className="text-neutral-600 hover:text-neutral-900 transition-colors font-medium">Telegram</a></li>
-              <li><a href="#" className="text-neutral-600 hover:text-neutral-900 transition-colors font-medium">Twitter</a></li>
+              <li><a href="https://t.me/timurandkomanda" target="_blank" rel="noopener noreferrer" className="text-neutral-600 hover:text-neutral-900 transition-colors font-medium">Telegram</a></li>
             </ul>
           </div>
         </div>

@@ -6,11 +6,11 @@ import { ru } from 'date-fns/locale';
 import { useAppContext, Article } from '../store/AppContext';
 import { ArrowRight } from 'lucide-react';
 
-const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl: string, videoUrl?: string, title: string }) => {
-  const [showVideo, setShowVideo] = useState(false);
+const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl?: string, videoUrl?: string, title: string }) => {
+  const [showVideo, setShowVideo] = useState(!imageUrl && !!videoUrl);
 
   useEffect(() => {
-    if (!videoUrl) return;
+    if (!videoUrl || !imageUrl) return;
     let timeout1: NodeJS.Timeout;
     let timeout2: NodeJS.Timeout;
 
@@ -30,7 +30,7 @@ const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl: string, videoUr
       clearTimeout(timeout1);
       clearTimeout(timeout2);
     };
-  }, [videoUrl]);
+  }, [videoUrl, imageUrl]);
 
   const getYoutubeId = (url: string) => {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
@@ -40,9 +40,9 @@ const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl: string, videoUr
   const ytId = videoUrl ? getYoutubeId(videoUrl) : null;
 
   return (
-    <div className="w-full h-full relative group-hover:scale-105 transition-transform duration-700 ease-out">
+    <div className="w-full h-full relative group-hover:scale-105 transition-transform duration-700 ease-out bg-neutral-100 flex items-center justify-center">
       {videoUrl && (
-        <div className="absolute inset-0 z-0 bg-black">
+        <div className={`absolute inset-0 z-0 bg-black ${!imageUrl ? 'z-10' : ''}`}>
           {ytId ? (
             <iframe
               src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&playsinline=1&modestbranding=1&showinfo=0`}
@@ -63,28 +63,67 @@ const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl: string, videoUr
           )}
         </div>
       )}
-      <img 
-        src={imageUrl} 
-        alt={title}
-        className={`w-full h-full object-cover relative z-10 transition-opacity duration-1000 ${showVideo ? "opacity-0" : "opacity-100"}`}
-        referrerPolicy="no-referrer"
-      />
+      {imageUrl && (
+        <img 
+          src={imageUrl} 
+          alt={title}
+          className={`w-full h-full object-cover relative z-10 transition-opacity duration-1000 ${showVideo ? "opacity-0" : "opacity-100"}`}
+          referrerPolicy="no-referrer"
+        />
+      )}
+      {!imageUrl && !videoUrl && (
+        <div className="text-neutral-300 font-bold uppercase tracking-widest">Нет медиа</div>
+      )}
     </div>
   );
 };
 
 export const Home: React.FC = () => {
-  const { articles } = useAppContext();
+  const { articles, loading } = useAppContext();
   const publishedArticles = articles.filter(a => a.status === 'published').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-24 pt-4 md:pt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+          <div className="lg:col-span-8">
+            <div className="animate-pulse">
+              <div className="aspect-[16/9] md:aspect-[2/1] bg-neutral-200 rounded-2xl mb-6"></div>
+              <div className="h-10 bg-neutral-200 rounded w-3/4 mb-4"></div>
+              <div className="h-6 bg-neutral-200 rounded w-full mb-2"></div>
+              <div className="h-6 bg-neutral-200 rounded w-5/6"></div>
+            </div>
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-x-6 md:gap-x-8 gap-y-10 md:gap-y-12">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-[16/9] bg-neutral-200 rounded-2xl mb-4"></div>
+                  <div className="h-6 bg-neutral-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-neutral-200 rounded w-full"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="hidden lg:block lg:col-span-4">
+            <div className="animate-pulse space-y-6">
+              <div className="h-6 bg-neutral-200 rounded w-1/3 mb-6"></div>
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="flex gap-4">
+                  <div className="w-12 h-4 bg-neutral-200 rounded"></div>
+                  <div className="flex-1 h-10 bg-neutral-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (publishedArticles.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-        <h2 className="text-2xl font-bold text-neutral-900 mb-4">Пока нет опубликованных статей</h2>
-        <p className="text-neutral-600 mb-8">Зайдите в панель администратора, чтобы добавить новые статьи.</p>
-        <Link to="/admin" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-          Перейти в админку
-        </Link>
+        <h2 className="text-2xl font-bold text-neutral-900 mb-4">Материалы готовятся к публикации</h2>
+        <p className="text-neutral-500">Скоро здесь появятся новые интересные статьи.</p>
       </div>
     );
   }
