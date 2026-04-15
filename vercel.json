@@ -3,6 +3,10 @@
     {
       "source": "/supabase-api/:match*",
       "destination": "https://dhydoigthvkipiaxhdmv.supabase.co/:match*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

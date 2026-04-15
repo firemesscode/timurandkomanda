@@ -80,6 +80,7 @@ export const Navbar: React.FC = () => {
                 {link.name}
               </Link>
             ))}
+
             {isAuthenticated ? (
               <div className="flex items-center gap-6 ml-4 pl-6 border-l-2 border-neutral-200 h-8">
                 <Link to="/admin" className="text-[13px] font-extrabold uppercase tracking-widest text-neutral-500 hover:text-black transition-colors">
@@ -96,12 +97,14 @@ export const Navbar: React.FC = () => {
             )}
           </nav>
 
-          <button 
-            className="md:hidden text-black p-2 -mr-2"
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <Menu size={24} />
-          </button>
+          <div className="flex items-center gap-4 md:hidden">
+            <button 
+              className="text-black p-2 -mr-2"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
 
         {/* Mobile Ticker */}

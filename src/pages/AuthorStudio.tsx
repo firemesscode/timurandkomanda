@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
@@ -8,12 +9,13 @@ import LinkExtension from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import { Markdown } from 'tiptap-markdown';
+import { Telegram } from '../lib/extensions/Telegram';
 import { useAppContext, Article } from '../store/AppContext';
 import { 
   ArrowLeft, Save, Image as ImageIcon, Youtube as YoutubeIcon, 
   Bold, Italic, Heading2, Heading3, List, ListOrdered, 
   Quote, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight, Settings,
-  CheckCircle2, Loader2, X
+  CheckCircle2, Loader2, X, Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -50,10 +52,31 @@ export const AuthorStudio: React.FC = () => {
     }
   }, [id, articles, isAuthenticated, navigate]);
 
+  // Listen for Telegram iframe resize messages
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== 'https://t.me') return;
+      try {
+        const data = JSON.parse(event.data);
+        if (data.event === 'resize' && data.height) {
+          const iframes = document.querySelectorAll('iframe[data-telegram-iframe]');
+          iframes.forEach((iframe: any) => {
+            if (iframe.contentWindow === event.source) {
+              iframe.style.height = `${data.height}px`;
+            }
+          });
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Markdown,
+      Telegram,
       Image.configure({
         HTMLAttributes: {
           class: 'rounded-xl max-w-full h-auto my-8',
@@ -129,6 +152,13 @@ export const AuthorStudio: React.FC = () => {
     const url = window.prompt('Введите URL YouTube видео:');
     if (url && editor) {
       editor.chain().focus().setYoutubeVideo({ src: url }).run();
+    }
+  };
+
+  const addTelegram = () => {
+    const url = window.prompt('Введите URL поста Telegram (например, https://t.me/durov/43):');
+    if (url && editor) {
+      editor.chain().focus().setTelegramEmbed({ src: url }).run();
     }
   };
 
@@ -228,9 +258,62 @@ export const AuthorStudio: React.FC = () => {
               <ToolbarButton onClick={setLink} active={editor.isActive('link')} icon={<LinkIcon size={18} />} tooltip="Ссылка" />
               <ToolbarButton onClick={addImage} icon={<ImageIcon size={18} />} tooltip="Изображение" />
               <ToolbarButton onClick={addYoutube} icon={<YoutubeIcon size={18} />} tooltip="YouTube Видео" />
+              <ToolbarButton onClick={addTelegram} icon={<Send size={18} />} tooltip="Telegram пост" />
             </div>
 
             {/* TipTap Content */}
+            {editor && (
+              <BubbleMenu 
+                editor={editor} 
+                tippyOptions={{ duration: 100 }}
+                className="bg-neutral-900 text-white shadow-xl rounded-xl overflow-hidden flex items-center p-1 border border-neutral-800"
+              >
+                <button
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                  className={`p-2 rounded transition-colors ${editor.isActive('bold') ? 'bg-neutral-700 text-white' : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'}`}
+                  title="Жирный"
+                >
+                  <Bold size={16} />
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                  className={`p-2 rounded transition-colors ${editor.isActive('italic') ? 'bg-neutral-700 text-white' : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'}`}
+                  title="Курсив"
+                >
+                  <Italic size={16} />
+                </button>
+                <div className="w-px h-5 bg-neutral-700 mx-1"></div>
+                <button
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                  className={`p-2 rounded transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-neutral-700 text-white' : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'}`}
+                  title="Заголовок 2"
+                >
+                  <Heading2 size={16} />
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                  className={`p-2 rounded transition-colors ${editor.isActive('heading', { level: 3 }) ? 'bg-neutral-700 text-white' : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'}`}
+                  title="Заголовок 3"
+                >
+                  <Heading3 size={16} />
+                </button>
+                <div className="w-px h-5 bg-neutral-700 mx-1"></div>
+                <button
+                  onClick={setLink}
+                  className={`p-2 rounded transition-colors ${editor.isActive('link') ? 'bg-neutral-700 text-white' : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'}`}
+                  title="Ссылка"
+                >
+                  <LinkIcon size={16} />
+                </button>
+                <button
+                  onClick={addTelegram}
+                  className="p-2 rounded transition-colors text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                  title="Telegram пост"
+                >
+                  <Send size={16} />
+                </button>
+              </BubbleMenu>
+            )}
             <EditorContent editor={editor} />
           </div>
         </div>

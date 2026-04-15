@@ -20,6 +20,26 @@ export const Article: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Listen for Telegram iframe resize messages
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== 'https://t.me') return;
+      try {
+        const data = JSON.parse(event.data);
+        if (data.event === 'resize' && data.height) {
+          const iframes = document.querySelectorAll('iframe[data-telegram-iframe]');
+          iframes.forEach((iframe: any) => {
+            if (iframe.contentWindow === event.source) {
+              iframe.style.height = `${data.height}px`;
+            }
+          });
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   if (!article) {
     return (
       <div className="container mx-auto px-6 py-32 text-center">
@@ -69,11 +89,7 @@ export const Article: React.FC = () => {
       );
     }
 
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-neutral-100">
-        <span className="text-neutral-300 font-bold uppercase tracking-widest text-sm">Нет медиа</span>
-      </div>
-    );
+    return null;
   };
 
   return (
