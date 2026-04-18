@@ -5,12 +5,13 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
-import LinkExtension from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import { Markdown } from 'tiptap-markdown';
 import { Telegram } from '../lib/extensions/Telegram';
 import { useAppContext, Article } from '../store/AppContext';
+import { MediaDropper } from '../components/ui/MediaDropper';
+import { supabase } from '../lib/supabase';
 import { 
   ArrowLeft, Save, Image as ImageIcon, Youtube as YoutubeIcon, 
   Bold, Italic, Heading2, Heading3, List, ListOrdered, 
@@ -87,12 +88,6 @@ export const AuthorStudio: React.FC = () => {
           class: 'w-full aspect-video rounded-xl my-8',
         },
       }),
-      LinkExtension.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-600 underline hover:text-blue-800 transition-colors',
-        },
-      }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -142,10 +137,36 @@ export const AuthorStudio: React.FC = () => {
   };
 
   const addImage = () => {
-    const url = window.prompt('Введите URL изображения:');
-    if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('photo')
+          .upload(fileName, file);
+          
+        if (error) throw error;
+        
+        const { data: publicUrlData } = supabase.storage
+          .from('photo')
+          .getPublicUrl(fileName);
+          
+        if (editor) {
+          editor.chain().focus().setImage({ src: publicUrlData.publicUrl }).run();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка при загрузке изображения в статью.');
+      }
+    };
+    input.click();
   };
 
   const addYoutube = () => {
@@ -346,30 +367,19 @@ export const AuthorStudio: React.FC = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Обложка (URL)</label>
-                    <input 
-                      type="url"
-                      value={article.image_url || ''}
-                      onChange={e => setArticle({...article, image_url: e.target.value})}
-                      className="w-full bg-white border border-neutral-200 rounded-md py-2 px-3 text-sm focus:outline-none focus:border-neutral-900"
-                    />
-                    {article.image_url && (
-                      <div className="mt-2 aspect-[16/9] rounded-md overflow-hidden bg-neutral-200">
-                        <img src={article.image_url} alt="Preview" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </div>
+                  <MediaDropper 
+                    type="image"
+                    label="Обложка (фото)"
+                    value={article.image_url || ''}
+                    onChange={(url) => setArticle({...article, image_url: url})}
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Видео обложка (URL)</label>
-                    <input 
-                      type="url"
-                      value={article.video_url || ''}
-                      onChange={e => setArticle({...article, video_url: e.target.value})}
-                      className="w-full bg-white border border-neutral-200 rounded-md py-2 px-3 text-sm focus:outline-none focus:border-neutral-900"
-                    />
-                  </div>
+                  <MediaDropper 
+                    type="video"
+                    label="Видео обложка"
+                    value={article.video_url || ''}
+                    onChange={(url) => setArticle({...article, video_url: url})}
+                  />
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Автор фото / Источник</label>

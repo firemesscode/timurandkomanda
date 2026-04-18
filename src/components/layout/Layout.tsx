@@ -3,14 +3,12 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { motion, AnimatePresence } from 'motion/react';
-import { VpnWarning } from '../ui/VpnWarning';
 
 export const Layout: React.FC = () => {
   const location = useLocation();
 
   return (
     <div className="min-h-screen flex flex-col relative selection:bg-[#007AFF]/20 selection:text-[#1D1D1F]">
-      <VpnWarning />
       <Navbar />
       <AnimatePresence mode="wait">
         <motion.main

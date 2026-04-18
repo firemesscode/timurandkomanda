@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useAppContext, Article } from '../store/AppContext';
 import { ArrowRight } from 'lucide-react';
+import { LightningIcon } from '../components/ui/LightningIcon';
 
 const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl?: string, videoUrl?: string, title: string }) => {
   const [showVideo, setShowVideo] = useState(!imageUrl && !!videoUrl);
@@ -40,7 +41,7 @@ const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl?: string, videoU
   const ytId = videoUrl ? getYoutubeId(videoUrl) : null;
 
   return (
-    <div className="w-full h-full relative group-hover:scale-105 transition-transform duration-700 ease-out bg-neutral-100 flex items-center justify-center">
+    <div className="absolute inset-0 w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out bg-neutral-100 flex items-center justify-center">
       {videoUrl && (
         <div className={`absolute inset-0 z-0 bg-black ${!imageUrl ? 'z-10' : ''}`}>
           {ytId ? (
@@ -72,7 +73,75 @@ const MediaPreview = ({ imageUrl, videoUrl, title }: { imageUrl?: string, videoU
         />
       )}
       {!imageUrl && !videoUrl && (
-        <div className="text-neutral-300 font-bold uppercase tracking-widest">Нет медиа</div>
+        <div className="text-neutral-300 font-bold uppercase tracking-widest flex items-center justify-center h-full w-full bg-neutral-100">Нет медиа</div>
+      )}
+    </div>
+  );
+};
+
+const MainSlider = ({ articles }: { articles: Article[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (articles.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % articles.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [articles.length]);
+
+  if (!articles.length) return null;
+
+  return (
+    <div className="relative mb-8 md:mb-12 group overflow-hidden">
+      <div 
+        className="flex transition-transform duration-700 ease-in-out"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
+        {articles.map((article) => (
+          <div key={article.id} className="min-w-full w-full shrink-0">
+            <Link to={`/article/${article.id}`} className="block group">
+                <div className="aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-neutral-100 mb-6 rounded-2xl relative">
+                  <MediaPreview imageUrl={article.image_url} videoUrl={article.video_url} title={article.title} />
+                </div>
+                <div className="max-w-4xl relative">
+                  <div className="flex items-center gap-3 mb-4">
+                    {article.is_urgent ? (
+                      <span className="text-red-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1.5">
+                        <LightningIcon size={16} /> Молния
+                      </span>
+                    ) : article.is_main ? (
+                      <span className="text-blue-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1.5">
+                        Главное
+                      </span>
+                    ) : null}
+                    <div className="text-xs font-bold text-neutral-500 uppercase tracking-widest">
+                      {format(new Date(article.created_at), 'd MMMM, HH:mm', { locale: ru })}
+                    </div>
+                  </div>
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter text-neutral-900 mb-3 md:mb-4 group-hover:text-blue-600 transition-colors leading-[1.1]">
+                    {article.title}
+                  </h2>
+                  <p className="text-lg md:text-xl text-neutral-600 line-clamp-3 leading-relaxed">
+                    {article.excerpt}
+                  </p>
+                </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {articles.length > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          {articles.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.preventDefault(); setCurrentIndex(i); }}
+              className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-neutral-900 w-6 md:w-8' : 'bg-neutral-300 hover:bg-neutral-500'}`}
+              aria-label={`Slide ${i + 1}`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -128,12 +197,22 @@ export const Home: React.FC = () => {
     );
   }
 
-  // Find the first article marked as main, otherwise fallback to the newest one
-  const featuredIndex = publishedArticles.findIndex(a => a.is_main);
-  const featured = featuredIndex !== -1 ? publishedArticles[featuredIndex] : publishedArticles[0];
+  // Get up to 4 urgent articles for the slider
+  let sliderArticles = publishedArticles.filter(a => a.is_urgent).slice(0, 4);
+  // If no urgent articles, use main articles
+  if (sliderArticles.length === 0) {
+    sliderArticles = publishedArticles.filter(a => a.is_main).slice(0, 4);
+  }
+  // If still none, fallback to newest
+  if (sliderArticles.length === 0) {
+    sliderArticles = publishedArticles.slice(0, 4);
+  }
+
+  // Ensure unique IDs in slider to avoid duplicates if fallback logic triggers (already unique from original array)
   
-  // The rest are all articles except the featured one
-  const rest = publishedArticles.filter(a => a.id !== featured.id);
+  // The rest are all articles NOT in the slider
+  const restIds = new Set(sliderArticles.map(a => a.id));
+  const rest = publishedArticles.filter(a => !restIds.has(a.id)).slice(0, 4);
 
   const Feed = ({ className }: { className?: string }) => (
     <div className={className}>
@@ -159,8 +238,8 @@ export const Home: React.FC = () => {
             </div>
             <div>
               {article.is_urgent && (
-                <span className="text-red-600 font-bold text-[10px] uppercase tracking-widest mr-2">
-                  Молния
+                <span className="text-red-600 font-bold text-[10px] uppercase tracking-widest mr-2 inline-flex items-center gap-1">
+                  <LightningIcon size={12} /> Молния
                 </span>
               )}
               <h4 className="text-[15px] font-bold text-neutral-900 group-hover:text-blue-600 transition-colors leading-snug">
@@ -179,38 +258,8 @@ export const Home: React.FC = () => {
         
         {/* Main Content Area (Left) */}
         <div className="lg:col-span-8">
-          {/* Featured Article */}
-          <section className="mb-8 md:mb-12">
-            <Link to={`/article/${featured.id}`} className="block group">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-neutral-100 mb-6 rounded-2xl relative">
-                  <MediaPreview imageUrl={featured.image_url} videoUrl={featured.video_url} title={featured.title} />
-                </div>
-                <div className="max-w-4xl">
-                  <div className="flex items-center gap-3 mb-4">
-                    {featured.is_urgent && (
-                      <span className="text-red-600 font-bold text-xs uppercase tracking-widest">
-                        Молния
-                      </span>
-                    )}
-                    <div className="text-xs font-bold text-neutral-500 uppercase tracking-widest">
-                      {format(new Date(featured.created_at), 'd MMMM, HH:mm', { locale: ru })}
-                    </div>
-                  </div>
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter text-neutral-900 mb-3 md:mb-4 group-hover:text-blue-600 transition-colors leading-[1.1]">
-                    {featured.title}
-                  </h2>
-                  <p className="text-lg md:text-xl text-neutral-600 line-clamp-3 leading-relaxed">
-                    {featured.excerpt}
-                  </p>
-                </div>
-              </motion.div>
-            </Link>
-          </section>
+          {/* Main Slider (Featured Content) */}
+          <MainSlider articles={sliderArticles} />
 
           {/* Mobile Feed (Hidden on Desktop) */}
           <Feed className="block lg:hidden mb-12" />
@@ -242,8 +291,8 @@ export const Home: React.FC = () => {
                       <Link to={`/article/${article.id}`} className={`group flex h-full ${isHorizontal ? 'flex-col sm:flex-row gap-6' : 'flex-col'}`}>
                         <div className={`relative overflow-hidden bg-neutral-100 rounded-2xl shrink-0 ${isHorizontal ? 'sm:w-1/2 aspect-[16/9]' : 'aspect-[16/9] mb-4'}`}>
                           {article.is_urgent && (
-                            <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1">
-                              Срочно
+                            <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 flex items-center gap-1 shadow-sm shadow-red-600/30">
+                              <LightningIcon size={12} className="text-white" /> Срочно
                             </div>
                           )}
                           <MediaPreview imageUrl={article.image_url} videoUrl={article.video_url} title={article.title} />

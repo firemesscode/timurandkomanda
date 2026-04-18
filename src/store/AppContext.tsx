@@ -154,12 +154,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { data, error } = await supabase
       .from('articles')
       .insert([newArticle])
-      .select(`*, author:profiles(*)`)
-      .single();
+      .select(`*, author:profiles(*)`);
 
-    if (!error && data) {
-      setArticles(prev => [data as Article, ...prev]);
+    if (!error && data && data.length > 0) {
+      setArticles(prev => [data[0] as Article, ...prev]);
       alert("Статья успешно создана!");
+    } else if (!error && data && data.length === 0) {
+      alert("Статья добавлена, но не удалось получить её обратно из базы данных (возможно, ограничения RLS).");
     } else {
       console.error('Error adding article:', error);
       alert("Ошибка при создании статьи: " + error?.message);
@@ -179,12 +180,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .from('articles')
       .update(fieldsToUpdate)
       .eq('id', id)
-      .select(`*, author:profiles(*)`)
-      .single();
+      .select(`*, author:profiles(*)`);
 
-    if (!error && data) {
-      setArticles(prev => prev.map(a => a.id === id ? (data as Article) : a));
+    if (!error && data && data.length > 0) {
+      setArticles(prev => prev.map(a => a.id === id ? (data[0] as Article) : a));
       alert("Статья успешно обновлена!");
+    } else if (!error && data && data.length === 0) {
+      alert("Не удалось обновить статью: нет доступа или статья не найдена.");
     } else {
       console.error('Error updating article:', error);
       alert("Ошибка при обновлении статьи: " + error?.message);

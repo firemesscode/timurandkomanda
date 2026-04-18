@@ -9,6 +9,8 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 
+import { LightningIcon } from '../components/ui/LightningIcon';
+
 export const Article: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { articles } = useAppContext();
@@ -101,8 +103,8 @@ export const Article: React.FC = () => {
       <div className="mb-6 md:mb-8 border-b border-neutral-200 pb-4 md:pb-6">
         <div className="flex items-center gap-3 mb-4">
           {article.is_urgent && (
-            <span className="text-red-600 font-bold text-xs uppercase tracking-wider">
-              Молния
+            <span className="text-red-600 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <LightningIcon size={16} /> Молния
             </span>
           )}
           <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
